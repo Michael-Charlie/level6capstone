@@ -5,10 +5,14 @@ const morgan = require("morgan");
 const mongoose = require("mongoose");
 const { expressjwt } = require("express-jwt");
 const mongoURL = process.env.MONGODB_URI;
+const path = require("path");
 
 app.use(express.json());
 
 app.use(morgan("dev"));
+
+// Serve static files from the 'client/dist' directory
+app.use(express.static(path.join(__dirname, "client", "dist")));
 
 mongoose.set("strictQuery", true);
 
@@ -34,6 +38,12 @@ app.use((err, req, res, next) => {
     res.status(err.status);
   }
   return res.send({ errMsg: err.message });
+});
+
+// Serve index.html for all remaining routes (SPA routing)
+// This should be placed right before app.listen()
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
 });
 
 app.listen(9000, () => {
